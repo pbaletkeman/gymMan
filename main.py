@@ -9,7 +9,19 @@ from litestar.openapi import OpenAPIConfig, OpenAPIController
 from litestar.static_files import StaticFilesConfig
 from litestar.template import TemplateConfig
 
+from litestar.contrib.sqlalchemy.plugins import AsyncSessionConfig, SQLAlchemyAsyncConfig, SQLAlchemyInitPlugin
+import logging
+
 from controllers.my_controller import MyAPIController
+from models.base_model import Base
+from models.exercise import Exercise
+from models.exercise_step import ExerciseStep
+
+from logger import logger
+
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
 
 if TYPE_CHECKING:
 
@@ -23,10 +35,17 @@ class OpenAPIControllerExtra(OpenAPIController):
     favicon_url = '/static-files/favicon.ico'
 
 
-async def on_startup():
-    """
-    sample start up script
-    """
+session_config = AsyncSessionConfig(expire_on_commit=False)
+sqlalchemy_config = SQLAlchemyAsyncConfig(
+    connection_string="sqlite+aiosqlite:///test.sqlite", session_config=session_config)
+# Create 'db_session' dependency.
+sqlalchemy_plugin = SQLAlchemyInitPlugin(config=sqlalchemy_config)
+
+
+async def on_startup() -> None:
+    """Initializes the database."""
+    async with sqlalchemy_config.get_engine().begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 app = Litestar(
