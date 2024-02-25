@@ -23,7 +23,7 @@ class ExerciseStep(Base):
     description: Mapped[str] = mapped_column(String(), nullable=True, sort_order=5)
 
     exercise: Mapped[Optional['Exercise']] = (
-        relationship(foreign_keys='[Exercise.exercise_id]',
+        relationship(foreign_keys='[Exercise.id]',
                      primaryjoin='ExerciseStep.exercise_id==Exercise.id')
     )
 

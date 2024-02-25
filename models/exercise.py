@@ -34,7 +34,7 @@ class ExerciseDTO(BaseModel):
 
 
 class ExerciseCreate(BaseModel):
-    id: int | None
+    # id: int | None
     name: str
     place_holder: Optional[str] = None
     tool_tip: Optional[str] = None
