@@ -120,16 +120,16 @@ class ExerciseController(Controller):
         except Exception as ex:
             raise HTTPException(detail=str(ex), status_code=status_codes.HTTP_404_NOT_FOUND)
 
-    @delete('/delete/{exercise_id:str}', tags=exercise_controller_tag)
+    @delete('/delete/{exercise_ids:str}', tags=exercise_controller_tag)
     async def delete_exercise(
             self,
             exercise_repo: ExerciseRepository,
-            exercise_id: str = Parameter(title='Exercise IDs',
-                                         description='Comma Separated List Primary Key Of The Exercises to Delete.', ),
+            exercise_ids: str = Parameter(title='Exercise IDs',
+                                          description='Comma Separated List Primary Key Of The Exercises to Delete.', ),
     ) -> None:
         """## Delete Exercise From The System"""
         try:
-            _ = await exercise_repo.delete_many(exercise_id.split(','))
+            _ = await exercise_repo.delete_many(exercise_ids.split(','))
             # _ = await exercise_repo.delete(exercise_id)
             await exercise_repo.session.commit()
         except Exception as ex:
