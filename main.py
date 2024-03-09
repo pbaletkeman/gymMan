@@ -13,21 +13,28 @@ from litestar.static_files import StaticFilesConfig
 from litestar.template import TemplateConfig
 
 from litestar.contrib.sqlalchemy.plugins import AsyncSessionConfig, SQLAlchemyAsyncConfig, SQLAlchemyInitPlugin
-import logging
 
 from controllers.exercise_controller import ExerciseController
+from controllers.exercise_step_controller import ExerciseStepController
 from controllers.my_controller import MyAPIController
 from models.base_model import Base
 from models.exercise import Exercise
 from models.exercise_step import ExerciseStep
 
-from logger import logger
+import logging
 
 logging.basicConfig()
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+
+session_config = AsyncSessionConfig(expire_on_commit=False)
+# engine_config = {'echo', True}
+sqlalchemy_config = SQLAlchemyAsyncConfig(
+    connection_string="sqlite+aiosqlite:///test.sqlite", session_config=session_config)
+# Create 'db_session' dependency.
+sqlalchemy_plugin = SQLAlchemyInitPlugin(config=sqlalchemy_config)
 
 
 class OpenAPIControllerExtra(OpenAPIController):
@@ -37,16 +44,10 @@ class OpenAPIControllerExtra(OpenAPIController):
     favicon_url = '/static-files/favicon.ico'
 
 
-session_config = AsyncSessionConfig(expire_on_commit=False)
-sqlalchemy_config = SQLAlchemyAsyncConfig(
-    connection_string="sqlite+aiosqlite:///test.sqlite", session_config=session_config)
-# Create 'db_session' dependency.
-sqlalchemy_plugin = SQLAlchemyInitPlugin(config=sqlalchemy_config)
-
-
 async def on_startup() -> None:
     """Initializes the database."""
     async with sqlalchemy_config.get_engine().begin() as conn:
+        sqlalchemy_config.get_engine().echo = True
         await conn.run_sync(Base.metadata.create_all)
 
 
@@ -74,7 +75,7 @@ def provide_limit_offset_pagination(
 
 
 app = Litestar(
-    route_handlers=[MyAPIController, ExerciseController],
+    route_handlers=[MyAPIController, ExerciseController, ExerciseStepController],
     on_startup=[on_startup],
     openapi_config=OpenAPIConfig(
         title='My API', version='1.0.0',

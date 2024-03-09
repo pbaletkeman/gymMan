@@ -30,6 +30,7 @@ class ExerciseStep(Base):
 
 class ExerciseStepDTO(BaseModel):
     id: int | None
+    exercise_id: int
     sort_order: Optional[int] = 0
     name: str
     place_holder: Optional[str] = None
@@ -39,6 +40,7 @@ class ExerciseStepDTO(BaseModel):
 
 
 class ExerciseStepCreate(BaseModel):
+    exercise_id: int
     name: str
     sort_order: Optional[int] = 0
     place_holder: Optional[str] = None
